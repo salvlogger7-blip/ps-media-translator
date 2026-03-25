@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="km">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PS MEDIA PRO - MASTER CONTROL</title>
+    <link href="https://fonts.googleapis.com/css2?family=Kantumruy+Pro:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root { --primary: #ff4757; --bg: #0a0a0b; --card: #161618; --text: #eee; --success: #2ecc71; }
+        body { background: var(--bg); color: var(--text); font-family: 'Kantumruy Pro', sans-serif; padding: 20px; display: flex; flex-direction: column; align-items: center; }
+        .wrapper { width: 100%; max-width: 1000px; display: grid; grid-template-columns: 1fr 1.2fr; gap: 25px; }
+        @media (max-width: 900px) { .wrapper { grid-template-columns: 1fr; } }
+        .card { background: var(--card); border-radius: 20px; padding: 25px; border: 1px solid #333; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        h2, h3 { color: var(--primary); text-align: center; margin-top: 0; text-transform: uppercase; }
+        label { font-size: 13px; color: #888; display: block; margin-top: 15px; }
+        .val-badge { float: right; color: var(--primary); font-weight: bold; font-size: 12px; }
+        select, input, .btn-main { width: 100%; padding: 12px; background: #222; border: 1px solid #333; color: #fff; border-radius: 12px; margin-top: 5px; outline: none; box-sizing: border-box; }
+        input[type="range"] { accent-color: var(--primary); height: 5px; cursor: pointer; }
+        .group-box { background: #111; padding: 15px; border-radius: 15px; margin-top: 15px; border-left: 4px solid var(--primary); }
+        .btn-main { background: var(--primary); border: none; font-weight: bold; cursor: pointer; margin-top: 15px; font-size: 16px; height: 50px; transition: 0.3s; }
+        .btn-main:hover { transform: translateY(-2px); filter: brightness(1.1); }
+        .btn-preview { background: #57606f; height: 45px; font-size: 13px; margin-top: 15px; }
+        .dashboard { max-height: 850px; overflow-y: auto; }
+        .file-item { background: #1e1e21; border-radius: 15px; padding: 15px; margin-bottom: 15px; border: 1px solid #333; }
+        audio { width: 100%; height: 35px; filter: invert(1) hue-rotate(180deg) brightness(1.5); margin: 10px 0; }
+        .actions { display: flex; gap: 8px; }
+        .btn-sm { flex: 1; padding: 10px; border-radius: 10px; border: none; color: white; cursor: pointer; font-weight: bold; font-size: 11px; }
+    </style>
+</head>
+<body>
+
+<div class="wrapper">
+    <div class="card">
+        <h2>PS MEDIA PRO</h2>
+        
+        <label>🎭 សំឡេង:</label>
+        <select id="voice">
+            <option value="km-KH-SreymomNeural">កញ្ញា ស្រីមុំ (ស្រី)</option>
+            <option value="km-KH-PisethNeural">លោក ពិសិដ្ឋ (ប្រុស)</option>
+        </select>
+
+        <label>⚡ ល្បឿនអានទូទៅ: <span id="sVal" class="val-badge">0%</span></label>
+        <input type="range" id="speed" min="-50" max="50" value="0" oninput="sVal.innerText=this.value+'%'">
+
+        <div class="group-box">
+            <div style="font-size:11px; color:var(--primary); margin-bottom:10px; font-weight:bold;">🛡️ របាំងការពារល្បឿន (Speed Guard)</div>
+            <label style="margin-top:0;">🐢 យឺតបំផុត: <span id="minVal" class="val-badge">-12%</span></label>
+            <input type="range" id="min_speed" min="-50" max="0" value="-12" oninput="minVal.innerText=this.value+'%'">
+
+            <label>🚀 លឿនបំផុត: <span id="maxVal" class="val-badge">28%</span></label>
+            <input type="range" id="max_speed" min="0" max="100" value="28" oninput="maxVal.innerText=this.value+'%'">
+
+            <label>🔊 គ្រលរ/ស្រួច (Pitch): <span id="pVal" class="val-badge">0</span></label>
+            <input type="range" id="pitch" min="-20" max="20" value="0" oninput="pVal.innerText=this.value">
+        </div>
+
+        <div class="group-box" style="border-left-color: var(--success);">
+            <label style="margin-top:0;">🎚️ ប្រភេទសំឡេង (Presets EQ):</label>
+            <select id="preset">
+                <option value="normal">ធម្មតា (Original)</option>
+                <option value="bass">Bass (ធ្ងន់ផ្អែម)</option>
+                <option value="reverb">Reverb (រណ្តំ)</option>
+                <option value="studio">Studio (ថ្លាឆ្វង់)</option>
+            </select>
+        </div>
+
+        <button id="btnPreview" class="btn-main btn-preview" onclick="preview()">🎧 ស្ដាប់សំឡេងសាកល្បង (Preview)</button>
+        <div id="previewArea" style="display:none; margin-top:10px; background:#000; padding:10px; border-radius:10px; text-align:center;">
+            <audio id="previewAudio" controls style="width:100%;"></audio>
+        </div>
+
+        <label>📁 បញ្ចូលហ្វាយ SRT:</label>
+        <input type="file" id="srtFile" accept=".srt">
+
+        <div id="pBox" style="display:none; margin-top:20px;">
+            <div id="stat" style="font-size:11px; text-align:center;">កំពុងផលិត... 0%</div>
+            <div style="width:100%; height:8px; background:#333; border-radius:5px; overflow:hidden;"><div id="pFill" style="width:0%; height:100%; background:var(--primary); transition:0.4s;"></div></div>
+        </div>
+
+        <button id="btnRun" class="btn-main" onclick="start()">🚀 ចាប់ផ្ដើមផលិតហ្វាយពេញ</button>
+    </div>
+
+    <div class="card dashboard">
+        <h3>📂 ឃ្លាំងផ្ទុកហ្វាយ</h3>
+        <div id="fileList"><p style="text-align:center; color:#555; padding-top:100px;">កំពុងរង់ចាំ...</p></div>
+    </div>
+</div>
+
+<script>
+    let srtData = [];
+    document.getElementById('srtFile').onchange = function(e) {
+        const reader = new FileReader();
+        reader.onload = function(ev) {
+            const blocks = ev.target.result.replace(/\r/g, '').split('\n\n');
+            srtData = [];
+            blocks.forEach(b => {
+                const lines = b.trim().split('\n');
+                if(lines.length >= 3) {
+                    const m = lines[1].match(/(\d{2}:\d{2}:\d{2},\d{3}) --> (\d{2}:\d{2}:\d{2},\d{3})/);
+                    if(m) srtData.push({ start: toMs(m[1]), end: toMs(m[2]), text: lines.slice(2).join(' ') });
+                }
+            });
+            alert("រកឃើញ " + srtData.length + " ឃ្លា!");
+        };
+        reader.readAsText(e.target.files[0]);
+    };
+
+    function toMs(t) {
+        const p = t.split(':'); const s = p[2].split(',');
+        return (parseInt(p[0])*3600 + parseInt(p[1])*60 + parseInt(s[0]))*1000 + parseInt(s[1]);
+    }
+
+    async function preview() {
+        const btn = document.getElementById('btnPreview');
+        btn.innerText = "កំពុងរៀបចំ..."; btn.disabled = true;
+        try {
+            const res = await fetch('/api/preview', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ 
+                    voice: document.getElementById('voice').value, 
+                    speed: document.getElementById('speed').value, 
+                    pitch: document.getElementById('pitch').value,
+                    preset: document.getElementById('preset').value
+                })
+            });
+            const data = await res.json();
+            const audio = document.getElementById('previewAudio');
+            audio.src = data.url;
+            document.getElementById('previewArea').style.display = 'block';
+            audio.play();
+        } catch (e) { alert("Error Preview!"); }
+        btn.innerText = "🎧 ស្ដាប់សំឡេងសាកល្បង (Preview)"; btn.disabled = false;
+    }
+
+    async function start() {
+        if(srtData.length === 0) return alert("សូមបញ្ចូល SRT!");
+        document.getElementById('btnRun').disabled = true;
+        document.getElementById('pBox').style.display = 'block';
+        const res = await fetch('/api/start', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ 
+                items: srtData, voice: document.getElementById('voice').value, 
+                speed: document.getElementById('speed').value, 
+                pitch: document.getElementById('pitch').value,
+                min_speed: document.getElementById('min_speed').value, 
+                max_speed: document.getElementById('max_speed').value,
+                preset: document.getElementById('preset').value
+            })
+        });
+        const { task_id } = await res.json();
+        const timer = setInterval(async () => {
+            const r = await fetch('/api/progress/' + task_id);
+            const d = await r.json();
+            if(d.progress === "done") {
+                clearInterval(timer);
+                document.getElementById('pFill').style.width = "100%";
+                document.getElementById('stat').innerText = "រួចរាល់!";
+                document.getElementById('btnRun').disabled = false;
+                loadFiles();
+            } else {
+                document.getElementById('pFill').style.width = d.progress + "%";
+                document.getElementById('stat').innerText = "កំពុងផលិត... " + d.progress + "%";
+            }
+        }, 1000);
+    }
+
+    async function loadFiles() {
+        const res = await fetch('/api/files');
+        const files = await res.json();
+        const list = document.getElementById('fileList');
+        list.innerHTML = files.length ? '' : '<p style="text-align:center; color:#555;">មិនទាន់មានហ្វាយ...</p>';
+        files.forEach(f => {
+            list.innerHTML += `
+                <div class="file-item">
+                    <div class="file-name">${f.name}</div>
+                    <audio controls preload="none"><source src="${f.url}" type="audio/mpeg"></audio>
+                    <div class="actions">
+                        <button class="btn-sm" style="background:var(--success)" onclick="window.open('${f.url}')">ទាញយក</button>
+                        <button class="btn-sm" style="background:var(--primary)" onclick="deleteFile('${f.name}')">លុប</button>
+                    </div>
+                </div>`;
+        });
+    }
+    async function deleteFile(name) {
+        if(confirm("លុប?")) { await fetch('/api/delete/' + name, { method: 'DELETE' }); loadFiles(); }
+    }
+    loadFiles();
+</script>
+</body>
+</html>
