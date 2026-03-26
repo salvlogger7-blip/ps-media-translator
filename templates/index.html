@@ -2,205 +2,56 @@
 <html lang="km">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PS Media Translator - បកប្រែរឿងចិន</title>
+    <title>PS MEDIA PRO</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
-        :root {
-            --primary-color: #8a2be2;
-            --secondary-color: #4b0082;
-            --bg-color: #0f0f0f;
-            --card-bg: #1a1a1a;
-            --text-color: #e0e0e0;
-        }
-
-        body {
-            font-family: 'Kantumruy Pro', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            margin: 0;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            min-height: 100vh;
-        }
-
-        header {
-            width: 100%;
-            padding: 20px 0;
-            text-align: center;
-            background: linear-gradient(to bottom, #1a1a1a, transparent);
-            border-bottom: 2px solid var(--primary-color);
-            margin-bottom: 30px;
-        }
-
-        .logo-area i {
-            font-size: 50px;
-            color: var(--primary-color);
-            filter: drop-shadow(0 0 10px var(--primary-color));
-        }
-
-        h1 {
-            margin: 10px 0;
-            font-size: 28px;
-            letter-spacing: 2px;
-            color: #fff;
-            text-transform: uppercase;
-        }
-
-        .container {
-            width: 90%;
-            max-width: 800px;
-            background: var(--card-bg);
-            padding: 30px;
-            border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-            border: 1px solid #333;
-        }
-
-        .upload-section {
-            border: 2px dashed #444;
-            padding: 40px;
-            text-align: center;
-            border-radius: 10px;
-            cursor: pointer;
-            transition: 0.3s;
-        }
-
-        .upload-section:hover {
-            border-color: var(--primary-color);
-            background: rgba(138, 43, 226, 0.05);
-        }
-
-        .btn {
-            background: linear-gradient(45deg, var(--secondary-color), var(--primary-color));
-            color: white;
-            border: none;
-            padding: 12px 25px;
-            border-radius: 5px;
-            font-weight: bold;
-            cursor: pointer;
-            width: 100%;
-            margin-top: 20px;
-            font-size: 16px;
-            transition: 0.3s;
-        }
-
-        .btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(138, 43, 226, 0.4);
-        }
-
-        #status {
-            margin-top: 20px;
-            padding: 15px;
-            border-radius: 5px;
-            display: none;
-        }
-
-        .loading { color: orange; }
-        .success { color: #2ecc71; }
-
-        footer {
-            margin-top: auto;
-            padding: 20px;
-            font-size: 14px;
-            color: #666;
-        }
-
-        .telegram-link {
-            color: var(--primary-color);
-            text-decoration: none;
-        }
+        :root { --main-red: #ff3e3e; --bg-dark: #121212; }
+        body { font-family: 'Kantumruy Pro', sans-serif; background: var(--bg-dark); color: white; padding: 20px; }
+        .container { max-width: 1000px; margin: 0 auto; display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .panel { background: #1e1e1e; padding: 20px; border-radius: 15px; border-top: 4px solid var(--main-red); }
+        h2 { color: var(--main-red); text-align: center; }
+        input[type="range"] { width: 100%; accent-color: var(--main-red); }
+        .btn-pro { background: var(--main-red); color: white; border: none; width: 100%; padding: 12px; border-radius: 8px; cursor: pointer; font-weight: bold; margin-top: 10px; }
+        .status-bar { background: var(--main-red); padding: 10px; position: fixed; bottom: 0; left: 0; width: 100%; display: flex; justify-content: center; gap: 20px; }
     </style>
 </head>
 <body>
-
-<header>
-    <div class="logo-area">
-        <i class="fas fa-dragon"></i> </div>
-    <h1>PS Media Family</h1>
-    <p>សម្រាយរឿង និងបកប្រែស្វ័យប្រវត្តិ</p>
-</header>
-
 <div class="container">
-    <div class="upload-section" onclick="document.getElementById('fileInput').click()">
-        <i class="fas fa-file-upload" style="font-size: 40px; margin-bottom: 15px;"></i>
-        <p>ចុចទីនេះ ដើម្បីបញ្ចូល File SRT (រឿងចិន)</p>
-        <input type="file" id="fileInput" hidden accept=".srt">
+    <div class="panel">
+        <h2>PS MEDIA PRO</h2>
+        <div style="background: #252525; padding: 15px; border-radius: 10px;">
+            <label>ល្បឿនអាន: <span id="speedVal">7%</span></label>
+            <input type="range" id="speedRange" min="-50" max="50" value="7" oninput="document.getElementById('speedVal').innerText=this.value+'%'">
+            <br><br>
+            <label>គ្រលរ/ស្រួច (Pitch): <span id="pitchVal">0</span></label>
+            <input type="range" id="pitchRange" min="-20" max="20" value="0" oninput="document.getElementById('pitchVal').innerText=this.value">
+        </div>
+        <button class="btn-pro" onclick="preview()">ស្ដាប់សាកល្បង</button>
+        <audio id="audio" controls style="width:100%; margin-top:10px;"></audio>
+        <input type="file" id="file" style="margin-top:20px;">
+        <button class="btn-pro" onclick="translateSRT()">បកប្រែ SRT</button>
     </div>
-
-    <button class="btn" onclick="uploadAndTranslate()">
-        <i class="fas fa-language"></i> ចាប់ផ្ដើមបកប្រែជាភាសាខ្មែរ
-    </button>
-
-    <div id="status"></div>
-
-    <hr style="margin: 30px 0; border: 0; border-top: 1px solid #333;">
-
-    <div class="tts-section">
-        <h3><i class="fas fa-microphone"></i> បង្កើតសម្លេង (TTS)</h3>
-        <textarea id="ttsText" style="width: 100%; height: 100px; background: #222; color: #fff; border: 1px solid #444; border-radius: 5px; padding: 10px;" placeholder="បញ្ចូលអត្ថបទខ្មែរដើម្បីបង្កើតសម្លេង..."></textarea>
-        <button class="btn" style="background: #444;" onclick="generateTTS()">
-            <i class="fas fa-play"></i> បង្កើតសម្លេងនិទាន
-        </button>
-        <audio id="audioPlayer" controls style="display: none; width: 100%; margin-top: 15px;"></audio>
+    <div class="panel">
+        <h2 style="color:white;">ឃ្លាំងផ្ទុកហ្វាយ</h2>
+        <div id="output">មិនទាន់មានហ្វាយ...</div>
     </div>
 </div>
-
-<footer>
-    &copy; 2026 PS Media Family. Admin: <strong>KOLDER</strong> | Telegram: <a href="#" class="telegram-link">@Admin_PS_Media</a>
-</footer>
-
+<div class="status-bar"><span>PS Media Family</span></div>
 <script>
-    async function uploadAndTranslate() {
-        const fileInput = document.getElementById('fileInput');
-        const status = document.getElementById('status');
-        
-        if (!fileInput.files[0]) {
-            alert("សូមជ្រើសរើស file ជាមុនសិន!");
-            return;
-        }
-
-        status.style.display = 'block';
-        status.className = 'loading';
-        status.innerHTML = '<i class="fas fa-spinner fa-spin"></i> កំពុងបកប្រែ... សូមរង់ចាំ (Gemini AI)';
-
-        const formData = new FormData();
-        formData.append('file', fileInput.files[0]);
-
-        try {
-            const response = await fetch('/process', { method: 'POST', body: formData });
-            const data = await response.json();
-
-            if (data.success) {
-                status.className = 'success';
-                status.innerHTML = `<i class="fas fa-check-circle"></i> រួចរាល់! <a href="${data.download_url}" style="color: #fff; font-weight: bold;">ចុចទីនេះដើម្បីទាញយក File</a>`;
-            } else {
-                status.innerHTML = "Error: " + data.error;
-            }
-        } catch (e) {
-            status.innerHTML = "មានបញ្ហាបច្ចេកទេស!";
-        }
-    }
-
-    async function generateTTS() {
-        const text = document.getElementById('ttsText').value;
-        if (!text) return alert("សូមបញ្ចូលអត្ថបទ!");
-
-        const response = await fetch('/generate_tts', {
+    async function preview() {
+        const res = await fetch('/generate_tts', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ text: text })
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+                text: "សួស្តីបងប្អូន នេះជាសំឡេងពី PS Media Pro",
+                speed: document.getElementById('speedRange').value + '%',
+                pitch: document.getElementById('pitchRange').value + 'Hz'
+            })
         });
-
-        const data = await response.json();
-        const player = document.getElementById('audioPlayer');
-        player.src = data.audio_url;
-        player.style.display = 'block';
-        player.play();
+        const data = await res.json();
+        document.getElementById('audio').src = data.audio_url;
+        document.getElementById('audio').play();
     }
 </script>
-
 </body>
 </html>
