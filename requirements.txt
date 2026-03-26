@@ -1,4 +1,5 @@
 Flask
+google-generativeai
 edge-tts
-gunicorn
 pydub
+gunicorn
