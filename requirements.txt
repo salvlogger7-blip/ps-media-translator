@@ -4,4 +4,3 @@ edge-tts
 pydub
 gunicorn
 python-dotenv
-pyaudioop
