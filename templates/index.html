@@ -2,56 +2,318 @@
 <html lang="km">
 <head>
     <meta charset="UTF-8">
-    <title>PS MEDIA PRO</title>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PS MEDIA PRO - MASTER CONTROL</title>
+    <link href="https://fonts.googleapis.com/css2?family=Kantumruy+Pro:wght@400;700&display=swap" rel="stylesheet">
     <style>
-        :root { --main-red: #ff3e3e; --bg-dark: #121212; }
-        body { font-family: 'Kantumruy Pro', sans-serif; background: var(--bg-dark); color: white; padding: 20px; }
-        .container { max-width: 1000px; margin: 0 auto; display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-        .panel { background: #1e1e1e; padding: 20px; border-radius: 15px; border-top: 4px solid var(--main-red); }
-        h2 { color: var(--main-red); text-align: center; }
-        input[type="range"] { width: 100%; accent-color: var(--main-red); }
-        .btn-pro { background: var(--main-red); color: white; border: none; width: 100%; padding: 12px; border-radius: 8px; cursor: pointer; font-weight: bold; margin-top: 10px; }
-        .status-bar { background: var(--main-red); padding: 10px; position: fixed; bottom: 0; left: 0; width: 100%; display: flex; justify-content: center; gap: 20px; }
+        :root { 
+            --primary: #ff4757; 
+            --bg: #0a0a0b; 
+            --card: #161618; 
+            --text: #eee; 
+            --success: #2ecc71; 
+        }
+
+        body { 
+            background: var(--bg); 
+            color: var(--text); 
+            font-family: 'Kantumruy Pro', sans-serif; 
+            padding: 20px; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            margin: 0;
+        }
+
+        /* --- License Display --- */
+        .lic-info {
+            position: absolute; top: 15px; right: 25px; text-align: right;
+            background: rgba(255, 255, 255, 0.05); padding: 10px 20px;
+            border-radius: 12px; border: 1px solid #333;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        }
+        .status-active { color: var(--success); font-weight: bold; font-size: 14px; }
+        .timer-val { color: #fffa65; font-family: monospace; font-size: 13px; font-weight: bold; }
+
+        .wrapper { 
+            width: 100%; 
+            max-width: 1300px; 
+            display: grid; 
+            grid-template-columns: 420px 1fr; 
+            gap: 25px; 
+            margin-top: 50px;
+        }
+
+        @media (max-width: 1000px) { .wrapper { grid-template-columns: 1fr; } }
+
+        .card { 
+            background: var(--card); 
+            border-radius: 20px; 
+            padding: 25px; 
+            border: 1px solid #333; 
+            box-shadow: 0 10px 40px rgba(0,0,0,0.6); 
+        }
+
+        /* --- Logo Section --- */
+        .logo-box { text-align: center; margin-bottom: 25px; }
+        .logo-img { 
+            width: 130px; height: 130px; border-radius: 50%; 
+            object-fit: cover; border: 3px solid var(--primary); 
+            box-shadow: 0 0 30px rgba(255, 71, 87, 0.6);
+            transition: 0.4s;
+        }
+        .logo-img:hover { transform: rotate(5deg) scale(1.05); box-shadow: 0 0 45px rgba(255, 71, 87, 0.9); }
+
+        h2 { color: var(--primary); margin: 10px 0 5px 0; font-size: 24px; letter-spacing: 1px; }
+
+        /* --- Form Elements --- */
+        label { font-size: 13px; color: #aaa; display: block; margin-top: 15px; }
+        .val-badge { float: right; color: var(--primary); font-weight: bold; }
+
+        select, input, .btn-main { 
+            width: 100%; padding: 12px; background: #222; border: 1px solid #333; 
+            color: #fff; border-radius: 12px; margin-top: 6px; outline: none; 
+            box-sizing: border-box; font-family: 'Kantumruy Pro', sans-serif;
+        }
+
+        input[type="range"] { accent-color: var(--primary); height: 5px; cursor: pointer; }
+
+        .group-box { 
+            background: #111; padding: 18px; border-radius: 15px; 
+            margin-top: 15px; border-left: 4px solid var(--primary); 
+        }
+
+        .btn-main { 
+            background: var(--primary); border: none; font-weight: bold; 
+            cursor: pointer; margin-top: 15px; font-size: 16px; height: 50px; 
+            transition: 0.3s; 
+        }
+        .btn-main:hover { background: #ff6b81; transform: translateY(-2px); }
+        .btn-main:disabled { background: #444; cursor: not-allowed; }
+
+        .btn-preview { background: #444; height: 40px; font-size: 13px; margin-top: 10px; }
+
+        /* --- File Warehouse Grid --- */
+        .dashboard { max-height: 90vh; overflow-y: auto; }
+        .file-grid { 
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); 
+            gap: 15px; margin-top: 15px; 
+        }
+        .file-item { 
+            background: #1e1e21; border-radius: 15px; padding: 15px; 
+            border: 1px solid #333; transition: 0.3s;
+        }
+        .file-item:hover { border-color: var(--primary); background: #252528; }
+
+        audio { width: 100%; height: 35px; filter: invert(1); margin: 10px 0; }
+
+        .btn-sm { 
+            padding: 10px; border-radius: 10px; border: none; color: white; 
+            cursor: pointer; font-weight: bold; font-size: 11px; flex: 1; 
+        }
+
+        /* --- Progress Bar --- */
+        #pBox { margin-top: 20px; }
+        .progress-container { width: 100%; height: 8px; background: #333; border-radius: 5px; overflow: hidden; margin-top: 5px; }
+        .progress-fill { width: 0%; height: 100%; background: var(--primary); transition: 0.4s; }
     </style>
 </head>
 <body>
-<div class="container">
-    <div class="panel">
-        <h2>PS MEDIA PRO</h2>
-        <div style="background: #252525; padding: 15px; border-radius: 10px;">
-            <label>ល្បឿនអាន: <span id="speedVal">7%</span></label>
-            <input type="range" id="speedRange" min="-50" max="50" value="7" oninput="document.getElementById('speedVal').innerText=this.value+'%'">
-            <br><br>
-            <label>គ្រលរ/ស្រួច (Pitch): <span id="pitchVal">0</span></label>
-            <input type="range" id="pitchRange" min="-20" max="20" value="0" oninput="document.getElementById('pitchVal').innerText=this.value">
+
+<div class="lic-info">
+    <div id="lic-status" class="status-active">Status: Checking...</div>
+    <div style="color:#888; margin-top:2px;">ID: <span id="lic-id">...</span> | ផុតកំណត់: <span id="lic-timer" class="timer-val">--:--:--</span></div>
+</div>
+
+<div class="wrapper">
+    <div class="card">
+        <div class="logo-box">
+            <img src="{{ url_for('static', filename='logo_ps.png') }}" class="logo-img">
+            <h2>PS MEDIA PRO</h2>
+            <div style="font-size:10px; color:#666;">PREMIUM VOICE GENERATOR</div>
         </div>
-        <button class="btn-pro" onclick="preview()">ស្ដាប់សាកល្បង</button>
-        <audio id="audio" controls style="width:100%; margin-top:10px;"></audio>
-        <input type="file" id="file" style="margin-top:20px;">
-        <button class="btn-pro" onclick="translateSRT()">បកប្រែ SRT</button>
+        
+        <label>🎭 ជ្រើសរើសសំឡេង:</label>
+        <select id="voice">
+            <option value="km-KH-SreymomNeural">កញ្ញា ស្រីមុំ (ស្រី)</option>
+            <option value="km-KH-PisethNeural">លោក ពិសិដ្ឋ (ប្រុស)</option>
+        </select>
+
+        <label>⚡ ល្បឿនអាន: <span id="sVal" class="val-badge">5%</span></label>
+        <input type="range" id="speed" min="-50" max="100" value="5" oninput="sVal.innerText=this.value+'%'">
+
+        <div class="group-box">
+            <p style="color:var(--primary); font-size:11px; margin:0 0 10px 0; font-weight:bold;">🛡️ SPEED GUARD & PITCH</p>
+            <label>🐢 យឺតបំផុត: <span id="minVal" class="val-badge">-15%</span></label>
+            <input type="range" id="min_speed" min="-50" max="0" value="-15" oninput="minVal.innerText=this.value+'%'">
+
+            <label>🚀 លឿនបំផុត: <span id="maxVal" class="val-badge">90%</span></label>
+            <input type="range" id="max_speed" min="0" max="150" value="90" oninput="maxVal.innerText=this.value+'%'">
+
+            <label>🔊 គ្រលរ/ស្រួច (Pitch): <span id="pVal" class="val-badge">4</span></label>
+            <input type="range" id="pitch" min="-15" max="15" value="4" oninput="pVal.innerText=this.value">
+        </div>
+
+        <label>🎚️ ប្រភេទសំឡេង (Presets EQ):</label>
+        <select id="preset">
+            <option value="normal">ធម្មតា (Original)</option>
+            <option value="bass">Bass (បុកបាសធ្ងន់)</option>
+            <option value="reverb">Reverb (សំឡេងរណ្តំ)</option>
+            <option value="studio">Studio (ថ្លាឆ្វង់)</option>
+        </select>
+
+        <button id="btnPreview" class="btn-main btn-preview" onclick="preview()">🎧 ស្ដាប់សំឡេងសាកល្បង</button>
+        <audio id="preAudio" style="display:none"></audio>
+
+        <label style="color:var(--primary); margin-top:20px;">✍️ ដាក់ឈ្មោះហ្វាយផលិតរួច (Rename):</label>
+        <input type="text" id="filename" placeholder="ឧទាហរណ៍៖ រឿងភាគចិន_ភាគ_01">
+
+        <label>📁 បញ្ចូលហ្វាយ SRT:</label>
+        <input type="file" id="srtFile" accept=".srt">
+
+        <div id="pBox" style="display:none;">
+            <div id="stat" style="font-size:11px; text-align:center; color:var(--primary);">កំពុងផលិត... 0%</div>
+            <div class="progress-container"><div id="pFill" class="progress-fill"></div></div>
+        </div>
+
+        <button id="btnRun" class="btn-main" onclick="start()">🚀 ចាប់ផ្ដើមផលិតហ្វាយពេញ</button>
     </div>
-    <div class="panel">
-        <h2 style="color:white;">ឃ្លាំងផ្ទុកហ្វាយ</h2>
-        <div id="output">មិនទាន់មានហ្វាយ...</div>
+
+    <div class="card dashboard">
+        <h3 style="color:var(--primary); margin-top:0;">📂 ឃ្លាំងផ្ទុកហ្វាយដែលផលិតរួច</h3>
+        <div id="fileList" class="file-grid">
+            </div>
     </div>
 </div>
-<div class="status-bar"><span>PS Media Family</span></div>
+
 <script>
+    let srtData = [];
+
+    // --- LICENSE COUNTDOWN ---
+    async function initLicense() {
+        try {
+            const res = await fetch('/api/license_info');
+            const d = await res.json();
+            document.getElementById('lic-id').innerText = d.id;
+            document.getElementById('lic-status').innerText = "Status: " + d.status;
+            
+            let remain = d.remaining_seconds;
+            const timerEl = document.getElementById('lic-timer');
+            
+            const timer = setInterval(() => {
+                if(remain <= 0) {
+                    clearInterval(timer);
+                    timerEl.innerText = "ផុតកំណត់";
+                    document.getElementById('lic-status').innerText = "Status: Expired ❌";
+                    return;
+                }
+                const days = Math.floor(remain / (3600*24));
+                const h = Math.floor((remain % (3600*24)) / 3600);
+                const m = Math.floor((remain % 3600) / 60);
+                const s = remain % 60;
+                timerEl.innerText = `${days}ថ្ងៃ ${h.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
+                remain--;
+            }, 1000);
+        } catch(e) { console.error("License Error"); }
+    }
+
+    // --- SRT PROCESSING ---
+    document.getElementById('srtFile').onchange = function(e) {
+        const reader = new FileReader();
+        reader.onload = function(ev) {
+            const blocks = ev.target.result.replace(/\r/g, '').split('\n\n');
+            srtData = blocks.map(b => {
+                const lines = b.trim().split('\n');
+                if(lines.length >= 3) {
+                    const m = lines[1].match(/(\d{2}:\d{2}:\d{2},\d{3}) --> (\d{2}:\d{2}:\d{2},\d{3})/);
+                    if(m) return { start: toMs(m[1]), end: toMs(m[2]), text: lines.slice(2).join(' ') };
+                }
+            }).filter(x => x);
+            alert("រកឃើញ " + srtData.length + " ឃ្លា!");
+        };
+        reader.readAsText(e.target.files[0]);
+    };
+
+    function toMs(t) {
+        const p = t.split(':'); const s = p[2].split(',');
+        return (parseInt(p[0])*3600 + parseInt(p[1])*60 + parseInt(s[0]))*1000 + parseInt(s[1]);
+    }
+
+    // --- API CALLS ---
     async function preview() {
-        const res = await fetch('/generate_tts', {
+        const btn = document.getElementById('btnPreview');
+        btn.innerText = "កំពុងរៀបចំ..."; btn.disabled = true;
+        const res = await fetch('/api/preview', {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({
-                text: "សួស្តីបងប្អូន នេះជាសំឡេងពី PS Media Pro",
-                speed: document.getElementById('speedRange').value + '%',
-                pitch: document.getElementById('pitchRange').value + 'Hz'
+            body: JSON.stringify({ 
+                voice: document.getElementById('voice').value, 
+                speed: document.getElementById('speed').value,
+                min_speed: document.getElementById('min_speed').value,
+                max_speed: document.getElementById('max_speed').value,
+                pitch: document.getElementById('pitch').value, 
+                preset: document.getElementById('preset').value 
             })
         });
-        const data = await res.json();
-        document.getElementById('audio').src = data.audio_url;
-        document.getElementById('audio').play();
+        const d = await res.json();
+        const a = document.getElementById('preAudio'); a.src = d.url; a.play();
+        btn.innerText = "🎧 ស្ដាប់សំឡេងសាកល្បង"; btn.disabled = false;
     }
+
+    async function start() {
+        if(!srtData.length) return alert("សូមបញ្ចូល SRT!");
+        document.getElementById('btnRun').disabled = true;
+        document.getElementById('pBox').style.display = 'block';
+
+        const res = await fetch('/api/start', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ 
+                items: srtData, 
+                filename: document.getElementById('filename').value,
+                voice: document.getElementById('voice').value, 
+                speed: document.getElementById('speed').value,
+                min_speed: document.getElementById('min_speed').value,
+                max_speed: document.getElementById('max_speed').value,
+                pitch: document.getElementById('pitch').value, 
+                preset: document.getElementById('preset').value 
+            })
+        });
+        const { task_id } = await res.json();
+        const interval = setInterval(async () => {
+            const r = await fetch('/api/progress/' + task_id);
+            const d = await r.json();
+            if(d.progress === "done") {
+                clearInterval(interval);
+                document.getElementById('pFill').style.width = "100%";
+                document.getElementById('stat').innerText = "ផលិតជោគជ័យ!";
+                document.getElementById('btnRun').disabled = false;
+                loadFiles();
+            } else {
+                document.getElementById('pFill').style.width = d.progress + "%";
+                document.getElementById('stat').innerText = "កំពុងផលិត... " + d.progress + "%";
+            }
+        }, 1000);
+    }
+
+    async function loadFiles() {
+        const res = await fetch('/api/files');
+        const files = await res.json();
+        document.getElementById('fileList').innerHTML = files.map(f => `
+            <div class="file-item">
+                <div style="font-size:12px; color:var(--primary); font-weight:bold; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">📄 ${f.name}</div>
+                <audio controls preload="none"><source src="${f.url}"></audio>
+                <div style="display:flex; gap:10px;">
+                    <button class="btn-sm" style="background:var(--success)" onclick="window.open('${f.url}')">ទាញយក</button>
+                    <button class="btn-sm" style="background:#444" onclick="deleteFile('${f.name}')">លុប</button>
+                </div>
+            </div>`).join('');
+    }
+
+    async function deleteFile(n) { if(confirm("លុបហ្វាយនេះ?")) { await fetch('/api/delete/'+n, {method:'DELETE'}); loadFiles(); } }
+
+    initLicense();
+    loadFiles();
 </script>
 </body>
 </html>
