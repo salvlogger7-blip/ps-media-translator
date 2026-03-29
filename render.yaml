@@ -1,8 +1,0 @@
-services:
-  - type: web
-    name: ps-media-translator-1
-    runtime: python
-    buildCommand: pip install -r requirements.txt
-    startCommand: gunicorn app:app
-    buildFilter:
-      - apt.txt
