@@ -5,39 +5,76 @@ import uuid
 import threading
 import time
 import datetime
-import hashlib
-from flask import Flask, render_template, request, jsonify
+import json
+from flask import Flask, render_template, request, jsonify, send_from_directory
 from pydub import AudioSegment
 from static_ffmpeg import add_paths
 
-# ១. បន្ថែម FFmpeg ទៅក្នុង System Path (ដោះស្រាយបញ្ហា error% លើ Render និង Local)
+# ១. បន្ថែម FFmpeg ទៅក្នុង System Path
 add_paths()
 
 app = Flask(__name__)
 
-# កំណត់ Folder សម្រាប់រក្សាទុកហ្វាយ
 STATIC_DIR = 'static'
+LICENSE_FILE = 'licenses.json'
+
 if not os.path.exists(STATIC_DIR):
     os.makedirs(STATIC_DIR)
 
 progress_db = {}
 
-# --- [ផ្នែកឡាយសិន] មុខងារត្រួតពិនិត្យសុពលភាព ---
-SECRET_SALT = "PS_MEDIA_PRO_2026"
+# --- ⚙️ មុខងារគ្រប់គ្រង DATABASE LICENSE ---
+def load_licenses():
+    if os.path.exists(LICENSE_FILE):
+        try:
+            with open(LICENSE_FILE, 'r') as f:
+                return json.load(f)
+        except: return {}
+    return {}
 
-@app.route('/api/license_info')
-def get_license():
-    # កំណត់ថ្ងៃផុតកំណត់៖ ២៦ មេសា ២០២៦
-    expiry_date = datetime.datetime(2026, 4, 26, 23, 59, 59) 
-    now = datetime.datetime.now()
-    remaining = int((expiry_date - now).total_seconds())
-    return jsonify({
-        "id": "PS-PRO-03000200",
-        "status": "Active ✅" if remaining > 0 else "Expired ❌",
-        "remaining_seconds": max(0, remaining)
-    })
+def save_licenses(data):
+    with open(LICENSE_FILE, 'w') as f:
+        json.dump(data, f, indent=4)
 
-# --- មុខងារជំនួយសម្រាប់សំឡេង ---
+# --- 🔐 API សម្រាប់បងបង្កើត LICENSE (ADMIN PANEL) ---
+# របៀបប្រើ៖ ផ្ញើ POST ទៅ /api/admin/add_license ជាមួយ admin_pass
+@app.route('/api/admin/add_license', methods=['POST'])
+def admin_add_license():
+    data = request.json
+    # បងអាចប្តូរ Password "ps123" នេះតាមចិត្ត
+    if data.get('admin_pass') != "ps123":
+        return jsonify({"status": "Password ខុស! មិនអាចបង្កើតបានទេ"}), 403
+    
+    dev_id = data.get('device_id')
+    expiry = data.get('expiry') # ទម្រង់ត្រូវតែ: YYYY-MM-DD (ឧ. 2026-12-31)
+    
+    if not dev_id or not expiry:
+        return jsonify({"status": "សូមបំពេញ ID និង ថ្ងៃផុតកំណត់ឱ្យច្បាស់"}), 400
+
+    licenses = load_licenses()
+    licenses[dev_id] = expiry
+    save_licenses(licenses)
+    return jsonify({"status": f"ជោគជ័យ! ID: {dev_id} អាចប្រើបានដល់ {expiry}"})
+
+# --- 🛡️ API សម្រាប់ឆែកមើល License (Client Side) ---
+@app.route('/api/check_license', methods=['POST'])
+def check_license():
+    dev_id = request.json.get('device_id')
+    licenses = load_licenses()
+    
+    # បន្ថែម Admin ID របស់បងទុកជាមុន (កុំឱ្យ Lock ខ្លួនឯង)
+    if dev_id == "ADMIN-PS-PRO":
+        return jsonify({"status": "Master Admin ✅", "authorized": True, "expiry": "2030-01-01"})
+
+    if dev_id in licenses:
+        exp_str = licenses[dev_id]
+        exp_date = datetime.datetime.strptime(exp_str, "%Y-%m-%d")
+        if datetime.datetime.now() < exp_date:
+            return jsonify({"status": "Active ✅", "authorized": True, "expiry": exp_str})
+    
+    return jsonify({"status": "គ្មានអាជ្ញាប័ណ្ណ ❌", "authorized": False})
+
+# --- មុខងារកែច្នៃសំឡេង (Effects) ---
 def change_pitch(seg, pitch):
     if pitch == 0: return seg
     new_sample_rate = int(seg.frame_rate * (2.0 ** (pitch / 12.0)))
@@ -63,20 +100,34 @@ def apply_preset(seg, preset):
 def index():
     return render_template('index.html')
 
+@app.route('/manifest.json')
+def serve_manifest():
+    return send_from_directory('static', 'manifest.json')
+
+# --- មុខងារ Preview ---
 @app.route('/api/preview', methods=['POST'])
 def preview_voice():
     try:
         data = request.json
-        text = "សួស្តីបង! នេះគឺជាសំឡេងសាកល្បងពី ភី អេស មីឌៀ ប្រូ។"
-        voice = data['voice']
-        speed_base = int(data.get('speed', 0))
-        rate = f"+{speed_base}%" if speed_base >= 0 else f"{speed_base}%"
+        dev_id = data.get('device_id', 'unknown')
+        
+        # Security Check
+        licenses = load_licenses()
+        if dev_id != "ADMIN-PS-PRO" and dev_id not in licenses:
+            return jsonify({"error": "No License"}), 403
+
+        text = data.get('text', "សួស្តី")
+        voice = data.get('voice', 'km-KH-SreymomNeural')
+        speed = int(data.get('speed', 0))
+        actual_speed = max(min(speed, 90), -15)
+        rate = f"+{actual_speed}%" if actual_speed >= 0 else f"{actual_speed}%"
+        
         pitch = int(data.get('pitch', 0))
         preset = data.get('preset', 'normal')
-        
-        task_id = "preview_" + str(uuid.uuid4())[:8]
+
+        task_id = f"prev_{dev_id}_" + str(uuid.uuid4())[:4]
         temp_path = os.path.join(STATIC_DIR, f"{task_id}.mp3")
-        
+
         async def make_preview():
             communicate = edge_tts.Communicate(text, voice, rate=rate)
             await communicate.save(temp_path)
@@ -91,27 +142,34 @@ def preview_voice():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+# --- មុខងារផលិតហ្វាយពេញ ---
 @app.route('/api/start', methods=['POST'])
 def start_task():
     data = request.json
+    dev_id = data.get('device_id', 'unknown')
+    
+    licenses = load_licenses()
+    if dev_id != "ADMIN-PS-PRO" and dev_id not in licenses:
+        return jsonify({"error": "No License"}), 403
+
     task_id = str(uuid.uuid4())[:8]
     progress_db[task_id] = 0
-    threading.Thread(target=lambda: asyncio.run(run_conversion(task_id, data))).start()
+    threading.Thread(target=lambda: asyncio.run(run_conversion(task_id, data, dev_id))).start()
     return jsonify({"task_id": task_id})
 
-async def run_conversion(task_id, data):
+async def run_conversion(task_id, data, dev_id):
     try:
         items = data['items']
         voice = data['voice']
-        speed_base = int(data['speed'])
-        pitch = int(data['pitch'])
-        preset = data['preset']
+        speed = int(data.get('speed', 0))
+        actual_speed = max(min(speed, 90), -15)
+        rate_str = f"+{actual_speed}%" if actual_speed >= 0 else f"{actual_speed}%"
+        
+        pitch = int(data.get('pitch', 0))
+        preset = data.get('preset', 'normal')
         custom_name = data.get('filename', 'result').strip() or "result"
         
-        # រៀបចំ Audio ប្លង់ទទេ
-        max_duration = items[-1]['end'] + 3000
-        full_audio = AudioSegment.silent(duration=max_duration)
-        rate_str = f"+{speed_base}%" if speed_base >= 0 else f"{speed_base}%"
+        full_audio = AudioSegment.silent(duration=items[-1]['end'] + 1000)
         
         for i, item in enumerate(items):
             temp_file = os.path.join(STATIC_DIR, f"temp_{task_id}_{i}.mp3")
@@ -127,27 +185,29 @@ async def run_conversion(task_id, data):
             
             progress_db[task_id] = int(((i + 1) / len(items)) * 100)
         
-        output_file = os.path.join(STATIC_DIR, f"{custom_name}_{task_id}.mp3")
+        output_name = f"user_{dev_id}_{custom_name}_{task_id}.mp3"
+        output_file = os.path.join(STATIC_DIR, output_name)
         full_audio.export(output_file, format="mp3")
         progress_db[task_id] = "done"
     except Exception as e:
-        print(f"Error: {e}")
         progress_db[task_id] = "error"
 
 @app.route('/api/progress/<task_id>')
 def get_progress(task_id):
     return jsonify({"progress": progress_db.get(task_id, 0)})
 
-@app.route('/api/files')
+@app.route('/api/files', methods=['POST'])
 def list_files():
+    dev_id = request.json.get('device_id', 'unknown')
     files = []
     if os.path.exists(STATIC_DIR):
         for f in os.listdir(STATIC_DIR):
-            if f.endswith('.mp3') and not (f.startswith('temp_') or f.startswith('preview_')):
+            if f.startswith(f"user_{dev_id}_") and f.endswith('.mp3'):
                 path = os.path.join(STATIC_DIR, f)
                 files.append({
-                    "name": f, "url": f"/static/{f}",
-                    "time": time.ctime(os.path.getctime(path)),
+                    "name": f.replace(f"user_{dev_id}_", ""),
+                    "real_name": f,
+                    "url": f"/static/{f}",
                     "timestamp": os.path.getctime(path),
                     "size": f"{round(os.path.getsize(path) / (1024*1024), 2)} MB"
                 })
@@ -162,6 +222,5 @@ def delete_file(filename):
     return jsonify({"status":"error"}), 404
 
 if __name__ == '__main__':
-    # កំណត់ Port ឱ្យត្រូវតាម Render (Default 5000)
     port = int(os.environ.get("PORT", 5000))
     app.run(host='0.0.0.0', port=port, debug=False)

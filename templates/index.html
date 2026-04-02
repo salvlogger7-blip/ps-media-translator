@@ -2,222 +2,191 @@
 <html lang="km">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>PS MEDIA PRO - MASTER CONTROL</title>
+    <link rel="manifest" href="/static/manifest.json">
+    <link rel="apple-touch-icon" href="/static/logo_ps.png">
     <link href="https://fonts.googleapis.com/css2?family=Kantumruy+Pro:wght@400;700&display=swap" rel="stylesheet">
     <style>
-        :root { 
-            --primary: #ff4757; 
-            --bg: #0a0a0b; 
-            --card: #161618; 
-            --text: #eee; 
-            --success: #2ecc71; 
-        }
-
-        body { 
-            background: var(--bg); 
-            color: var(--text); 
-            font-family: 'Kantumruy Pro', sans-serif; 
-            padding: 20px; 
-            display: flex; 
-            flex-direction: column; 
-            align-items: center; 
-            margin: 0;
-        }
-
-        /* --- License Display --- */
-        .lic-info {
-            position: absolute; top: 15px; right: 25px; text-align: right;
-            background: rgba(255, 255, 255, 0.05); padding: 10px 20px;
-            border-radius: 12px; border: 1px solid #333;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
-        }
+        :root { --primary: #ff4757; --bg: #0a0a0b; --card: #161618; --text: #eee; --success: #2ecc71; --admin: #f1c40f; }
+        body { background: var(--bg); color: var(--text); font-family: 'Kantumruy Pro', sans-serif; padding: 15px; margin: 0; }
+        
+        .lic-bar { background: #1a1a1c; padding: 12px; border-radius: 12px; margin-bottom: 15px; border: 1px solid #333; text-align: center; }
         .status-active { color: var(--success); font-weight: bold; font-size: 14px; }
-        .timer-val { color: #fffa65; font-family: monospace; font-size: 13px; font-weight: bold; }
+        .timer-val { color: #fffa65; font-family: monospace; }
+        .btn-copy-id { background: #444; border: none; color: #fffa65; padding: 4px 10px; border-radius: 5px; font-size: 11px; margin-top: 8px; cursor: pointer; }
 
-        .wrapper { 
-            width: 100%; 
-            max-width: 1300px; 
-            display: grid; 
-            grid-template-columns: 420px 1fr; 
-            gap: 25px; 
-            margin-top: 50px;
-        }
+        .wrapper { width: 100%; display: flex; flex-direction: column; gap: 15px; max-width: 800px; margin: 0 auto; }
+        .card { background: var(--card); border-radius: 20px; padding: 20px; border: 1px solid #333; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
 
-        @media (max-width: 1000px) { .wrapper { grid-template-columns: 1fr; } }
+        .logo-box { text-align: center; margin-bottom: 15px; }
+        .logo-img { width: 90px; height: 90px; border-radius: 50%; border: 2px solid var(--primary); }
+        h2 { color: var(--primary); margin: 10px 0 0; font-size: 20px; }
 
-        .card { 
-            background: var(--card); 
-            border-radius: 20px; 
-            padding: 25px; 
-            border: 1px solid #333; 
-            box-shadow: 0 10px 40px rgba(0,0,0,0.6); 
-        }
-
-        /* --- Logo Section --- */
-        .logo-box { text-align: center; margin-bottom: 25px; }
-        .logo-img { 
-            width: 130px; height: 130px; border-radius: 50%; 
-            object-fit: cover; border: 3px solid var(--primary); 
-            box-shadow: 0 0 30px rgba(255, 71, 87, 0.6);
-            transition: 0.4s;
-        }
-        .logo-img:hover { transform: rotate(5deg) scale(1.05); box-shadow: 0 0 45px rgba(255, 71, 87, 0.9); }
-
-        h2 { color: var(--primary); margin: 10px 0 5px 0; font-size: 24px; letter-spacing: 1px; }
-
-        /* --- Form Elements --- */
-        label { font-size: 13px; color: #aaa; display: block; margin-top: 15px; }
+        label { font-size: 12px; color: #aaa; display: block; margin-top: 12px; }
         .val-badge { float: right; color: var(--primary); font-weight: bold; }
+        select, input, .btn-main { width: 100%; padding: 12px; background: #222; border: 1px solid #333; color: #fff; border-radius: 10px; margin-top: 5px; outline: none; box-sizing: border-box; font-family: 'Kantumruy Pro'; }
+        input[type="range"] { accent-color: var(--primary); height: 5px; }
 
-        select, input, .btn-main { 
-            width: 100%; padding: 12px; background: #222; border: 1px solid #333; 
-            color: #fff; border-radius: 12px; margin-top: 6px; outline: none; 
-            box-sizing: border-box; font-family: 'Kantumruy Pro', sans-serif;
-        }
+        .btn-main { background: var(--primary); border: none; font-weight: bold; font-size: 16px; margin-top: 15px; cursor: pointer; }
+        .btn-preview { background: #333; height: 40px; font-size: 13px; margin-top: 10px; }
 
-        input[type="range"] { accent-color: var(--primary); height: 5px; cursor: pointer; }
+        .file-grid { display: grid; grid-template-columns: 1fr; gap: 12px; margin-top: 10px; }
+        .file-item { background: #1e1e21; border-radius: 12px; padding: 12px; border: 1px solid #333; }
+        audio { width: 100%; height: 35px; filter: invert(1); margin: 8px 0; }
+        .btn-sm { padding: 8px; border-radius: 8px; border: none; color: white; font-weight: bold; font-size: 11px; flex: 1; cursor: pointer; }
 
-        .group-box { 
-            background: #111; padding: 18px; border-radius: 15px; 
-            margin-top: 15px; border-left: 4px solid var(--primary); 
-        }
+        #pBox { margin-top: 15px; background: #111; padding: 10px; border-radius: 10px; }
+        .progress-container { width: 100%; height: 6px; background: #333; border-radius: 3px; overflow: hidden; margin-top: 5px; }
+        .progress-fill { width: 0%; height: 100%; background: var(--primary); transition: 0.3s; }
 
-        .btn-main { 
-            background: var(--primary); border: none; font-weight: bold; 
-            cursor: pointer; margin-top: 15px; font-size: 16px; height: 50px; 
-            transition: 0.3s; 
-        }
-        .btn-main:hover { background: #ff6b81; transform: translateY(-2px); }
-        .btn-main:disabled { background: #444; cursor: not-allowed; }
-
-        .btn-preview { background: #444; height: 40px; font-size: 13px; margin-top: 10px; }
-
-        /* --- File Warehouse Grid --- */
-        .dashboard { max-height: 90vh; overflow-y: auto; }
-        .file-grid { 
-            display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); 
-            gap: 15px; margin-top: 15px; 
-        }
-        .file-item { 
-            background: #1e1e21; border-radius: 15px; padding: 15px; 
-            border: 1px solid #333; transition: 0.3s;
-        }
-        .file-item:hover { border-color: var(--primary); background: #252528; }
-
-        audio { width: 100%; height: 35px; filter: invert(1); margin: 10px 0; }
-
-        .btn-sm { 
-            padding: 10px; border-radius: 10px; border: none; color: white; 
-            cursor: pointer; font-weight: bold; font-size: 11px; flex: 1; 
-        }
-
-        /* --- Progress Bar --- */
-        #pBox { margin-top: 20px; }
-        .progress-container { width: 100%; height: 8px; background: #333; border-radius: 5px; overflow: hidden; margin-top: 5px; }
-        .progress-fill { width: 0%; height: 100%; background: var(--primary); transition: 0.4s; }
+        /* Admin Style */
+        .admin-card { border-color: var(--admin); margin-top: 40px; }
+        .admin-title { color: var(--admin); margin: 0 0 10px 0; display: flex; align-items: center; gap: 8px; }
+        .btn-admin { background: var(--admin); color: #000; }
     </style>
 </head>
 <body>
 
-<div class="lic-info">
-    <div id="lic-status" class="status-active">Status: Checking...</div>
-    <div style="color:#888; margin-top:2px;">ID: <span id="lic-id">...</span> | ផុតកំណត់: <span id="lic-timer" class="timer-val">--:--:--</span></div>
+<div class="lic-bar">
+    <div id="lic-status" class="status-active">កំពុងពិនិត្យអាជ្ញាប័ណ្ណ...</div>
+    <div style="font-size:11px; color:#888;">
+        ID របស់អ្នក: <span id="display-id">...</span> | ផុតកំណត់: <span id="lic-timer" class="timer-val">--:--</span>
+    </div>
+    <button class="btn-copy-id" onclick="copyID()">📋 ចម្លង ID ផ្ញើទៅម្ចាស់</button>
 </div>
 
 <div class="wrapper">
     <div class="card">
         <div class="logo-box">
-            <img src="{{ url_for('static', filename='logo_ps.png') }}" class="logo-img">
+            <img src="/static/logo_ps.png" class="logo-img">
             <h2>PS MEDIA PRO</h2>
-            <div style="font-size:10px; color:#666;">PREMIUM VOICE GENERATOR</div>
         </div>
         
-        <label>🎭 ជ្រើសរើសសំឡេង:</label>
-        <select id="voice">
-            <option value="km-KH-SreymomNeural">កញ្ញា ស្រីមុំ (ស្រី)</option>
-            <option value="km-KH-PisethNeural">លោក ពិសិដ្ឋ (ប្រុស)</option>
-        </select>
+        <div id="app-content" style="display: none;">
+            <label>🎭 ជ្រើសរើសសំឡេង:</label>
+            <select id="voice">
+                <option value="km-KH-SreymomNeural">កញ្ញា ស្រីមុំ (ស្រី)</option>
+                <option value="km-KH-PisethNeural">លោក ពិសិដ្ឋ (ប្រុស)</option>
+            </select>
 
-        <label>⚡ ល្បឿនអាន: <span id="sVal" class="val-badge">5%</span></label>
-        <input type="range" id="speed" min="-50" max="100" value="5" oninput="sVal.innerText=this.value+'%'">
+            <label>⚡ ល្បឿនអាន: <span id="sVal" class="val-badge">5%</span></label>
+            <input type="range" id="speed" min="-15" max="90" value="5" oninput="sVal.innerText=this.value+'%'">
 
-        <div class="group-box">
-            <p style="color:var(--primary); font-size:11px; margin:0 0 10px 0; font-weight:bold;">🛡️ SPEED GUARD & PITCH</p>
-            <label>🐢 យឺតបំផុត: <span id="minVal" class="val-badge">-15%</span></label>
-            <input type="range" id="min_speed" min="-50" max="0" value="-15" oninput="minVal.innerText=this.value+'%'">
+            <div style="background: #111; padding: 12px; border-radius: 12px; margin-top: 12px;">
+                <label style="margin-top:0;">🔊 គ្រលរ/ស្រួច (Pitch): <span id="pVal" class="val-badge">4</span></label>
+                <input type="range" id="pitch" min="-15" max="15" value="4" oninput="pVal.innerText=this.value">
+                
+                <label>🎚️ ប្រភេទសំឡេង (Presets):</label>
+                <select id="preset">
+                    <option value="normal">ធម្មតា (Original)</option>
+                    <option value="bass">Bass (បុកបាស)</option>
+                    <option value="reverb">Reverb (រណ្តំ)</option>
+                    <option value="studio">Studio (ថ្លាឆ្វង់)</option>
+                </select>
+            </div>
 
-            <label>🚀 លឿនបំផុត: <span id="maxVal" class="val-badge">90%</span></label>
-            <input type="range" id="max_speed" min="0" max="150" value="90" oninput="maxVal.innerText=this.value+'%'">
+            <button id="btnPreview" class="btn-main btn-preview" onclick="preview()">🎧 ស្ដាប់សំឡេងសាកល្បង</button>
+            <audio id="preAudio" style="display:none"></audio>
 
-            <label>🔊 គ្រលរ/ស្រួច (Pitch): <span id="pVal" class="val-badge">4</span></label>
-            <input type="range" id="pitch" min="-15" max="15" value="4" oninput="pVal.innerText=this.value">
+            <label style="color:var(--primary); margin-top:15px;">✍️ ឈ្មោះហ្វាយផលិតរួច:</label>
+            <input type="text" id="filename" placeholder="ដាក់ឈ្មោះហ្វាយនៅទីនេះ...">
+
+            <label>📁 បញ្ចូលហ្វាយ SRT:</label>
+            <input type="file" id="srtFile" accept=".srt">
+
+            <div id="pBox" style="display:none;">
+                <div id="stat" style="font-size:11px; text-align:center; color:var(--primary);">កំពុងផលិត... 0%</div>
+                <div class="progress-container"><div id="pFill" class="progress-fill"></div></div>
+            </div>
+
+            <button id="btnRun" class="btn-main" onclick="start()">🚀 ចាប់ផ្ដើមផលិតហ្វាយពេញ</button>
         </div>
-
-        <label>🎚️ ប្រភេទសំឡេង (Presets EQ):</label>
-        <select id="preset">
-            <option value="normal">ធម្មតា (Original)</option>
-            <option value="bass">Bass (បុកបាសធ្ងន់)</option>
-            <option value="reverb">Reverb (សំឡេងរណ្តំ)</option>
-            <option value="studio">Studio (ថ្លាឆ្វង់)</option>
-        </select>
-
-        <button id="btnPreview" class="btn-main btn-preview" onclick="preview()">🎧 ស្ដាប់សំឡេងសាកល្បង</button>
-        <audio id="preAudio" style="display:none"></audio>
-
-        <label style="color:var(--primary); margin-top:20px;">✍️ ដាក់ឈ្មោះហ្វាយផលិតរួច (Rename):</label>
-        <input type="text" id="filename" placeholder="ឧទាហរណ៍៖ រឿងភាគចិន_ភាគ_01">
-
-        <label>📁 បញ្ចូលហ្វាយ SRT:</label>
-        <input type="file" id="srtFile" accept=".srt">
-
-        <div id="pBox" style="display:none;">
-            <div id="stat" style="font-size:11px; text-align:center; color:var(--primary);">កំពុងផលិត... 0%</div>
-            <div class="progress-container"><div id="pFill" class="progress-fill"></div></div>
+        
+        <div id="lock-msg" style="text-align: center; padding: 20px; color: #ff4757; display: none;">
+            ⚠️ មិនទាន់មានសិទ្ធិប្រើប្រាស់ទេ! សូមផ្ញើ ID ខាងលើទៅម្ចាស់ App។
         </div>
-
-        <button id="btnRun" class="btn-main" onclick="start()">🚀 ចាប់ផ្ដើមផលិតហ្វាយពេញ</button>
     </div>
 
     <div class="card dashboard">
-        <h3 style="color:var(--primary); margin-top:0;">📂 ឃ្លាំងផ្ទុកហ្វាយដែលផលិតរួច</h3>
+        <h4 style="color:var(--primary); margin:0 0 10px 0;">📂 ឃ្លាំងហ្វាយរបស់អ្នក</h4>
         <div id="fileList" class="file-grid">
-            </div>
+            <p style="font-size: 11px; color: #555; text-align: center;">មិនទាន់មានហ្វាយផលិតរួចនៅឡើយ</p>
+        </div>
+    </div>
+
+    <div class="card admin-card">
+        <h3 class="admin-title">🔑 Admin License Control</h3>
+        <input type="password" id="adminPass" placeholder="Admin Password">
+        <input type="text" id="targetId" placeholder="បញ្ចូល Device ID ភ្ញៀវ">
+        <label>ជ្រើសរើសថ្ងៃផុតកំណត់:</label>
+        <input type="date" id="expiryDate">
+        <button class="btn-main btn-admin" onclick="createLicense()">✅ បង្កើត License ឥឡូវនេះ</button>
     </div>
 </div>
 
 <script>
     let srtData = [];
 
-    // --- LICENSE COUNTDOWN ---
-    async function initLicense() {
+    // --- DEVICE ID & LICENSE ---
+    function getDeviceID() {
+        let id = localStorage.getItem('ps_device_id');
+        if (!id) {
+            id = 'PS-MOB-' + Math.random().toString(36).substr(2, 6).toUpperCase();
+            localStorage.setItem('ps_device_id', id);
+        }
+        return id;
+    }
+
+    async function checkLicense() {
+        const myId = getDeviceID();
+        document.getElementById('display-id').innerText = myId;
+        
         try {
-            const res = await fetch('/api/license_info');
+            const res = await fetch('/api/check_license', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ device_id: myId })
+            });
             const d = await res.json();
-            document.getElementById('lic-id').innerText = d.id;
-            document.getElementById('lic-status').innerText = "Status: " + d.status;
             
-            let remain = d.remaining_seconds;
-            const timerEl = document.getElementById('lic-timer');
-            
-            const timer = setInterval(() => {
-                if(remain <= 0) {
-                    clearInterval(timer);
-                    timerEl.innerText = "ផុតកំណត់";
-                    document.getElementById('lic-status').innerText = "Status: Expired ❌";
-                    return;
-                }
-                const days = Math.floor(remain / (3600*24));
-                const h = Math.floor((remain % (3600*24)) / 3600);
-                const m = Math.floor((remain % 3600) / 60);
-                const s = remain % 60;
-                timerEl.innerText = `${days}ថ្ងៃ ${h.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
-                remain--;
-            }, 1000);
+            if (d.authorized) {
+                document.getElementById('lic-status').innerText = "ស្ថានភាព: " + d.status;
+                document.getElementById('lic-timer').innerText = d.expiry;
+                document.getElementById('app-content').style.display = 'block';
+                document.getElementById('lock-msg').style.display = 'none';
+                loadFiles();
+            } else {
+                document.getElementById('lic-status').innerText = "ស្ថានភាព: " + d.status;
+                document.getElementById('lock-msg').style.display = 'block';
+                document.getElementById('app-content').style.display = 'none';
+            }
         } catch(e) { console.error("License Error"); }
     }
 
-    // --- SRT PROCESSING ---
+    function copyID() {
+        navigator.clipboard.writeText(getDeviceID());
+        alert("បានចម្លង ID រួចរាល់!");
+    }
+
+    // --- ADMIN FUNCTION ---
+    async function createLicense() {
+        const adminPass = document.getElementById('adminPass').value;
+        const deviceId = document.getElementById('targetId').value;
+        const expiry = document.getElementById('expiryDate').value;
+
+        if(!adminPass || !deviceId || !expiry) return alert("សូមបំពេញព័ត៌មានឱ្យគ្រប់!");
+
+        const res = await fetch('/api/admin/add_license', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ admin_pass: adminPass, device_id: deviceId, expiry: expiry })
+        });
+        const data = await res.json();
+        alert(data.status);
+    }
+
+    // --- SRT & VOICING ---
     document.getElementById('srtFile').onchange = function(e) {
         const reader = new FileReader();
         reader.onload = function(ev) {
@@ -239,7 +208,6 @@
         return (parseInt(p[0])*3600 + parseInt(p[1])*60 + parseInt(s[0]))*1000 + parseInt(s[1]);
     }
 
-    // --- API CALLS ---
     async function preview() {
         const btn = document.getElementById('btnPreview');
         btn.innerText = "កំពុងរៀបចំ..."; btn.disabled = true;
@@ -247,10 +215,10 @@
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify({ 
+                device_id: getDeviceID(),
+                text: "សួស្តីបង នេះគឺជាសំឡេងសាកល្បងរបស់អ្នក",
                 voice: document.getElementById('voice').value, 
                 speed: document.getElementById('speed').value,
-                min_speed: document.getElementById('min_speed').value,
-                max_speed: document.getElementById('max_speed').value,
                 pitch: document.getElementById('pitch').value, 
                 preset: document.getElementById('preset').value 
             })
@@ -269,12 +237,11 @@
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify({ 
+                device_id: getDeviceID(),
                 items: srtData, 
                 filename: document.getElementById('filename').value,
                 voice: document.getElementById('voice').value, 
                 speed: document.getElementById('speed').value,
-                min_speed: document.getElementById('min_speed').value,
-                max_speed: document.getElementById('max_speed').value,
                 pitch: document.getElementById('pitch').value, 
                 preset: document.getElementById('preset').value 
             })
@@ -293,27 +260,32 @@
                 document.getElementById('pFill').style.width = d.progress + "%";
                 document.getElementById('stat').innerText = "កំពុងផលិត... " + d.progress + "%";
             }
-        }, 1000);
+        }, 1500);
     }
 
     async function loadFiles() {
-        const res = await fetch('/api/files');
+        const res = await fetch('/api/files', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ device_id: getDeviceID() })
+        });
         const files = await res.json();
-        document.getElementById('fileList').innerHTML = files.map(f => `
-            <div class="file-item">
-                <div style="font-size:12px; color:var(--primary); font-weight:bold; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">📄 ${f.name}</div>
-                <audio controls preload="none"><source src="${f.url}"></audio>
-                <div style="display:flex; gap:10px;">
-                    <button class="btn-sm" style="background:var(--success)" onclick="window.open('${f.url}')">ទាញយក</button>
-                    <button class="btn-sm" style="background:#444" onclick="deleteFile('${f.name}')">លុប</button>
-                </div>
-            </div>`).join('');
+        if(files.length > 0) {
+            document.getElementById('fileList').innerHTML = files.map(f => `
+                <div class="file-item">
+                    <div style="font-size:11px; color:var(--primary); font-weight:bold; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">📄 ${f.name}</div>
+                    <audio controls preload="none"><source src="${f.url}"></audio>
+                    <div style="display:flex; gap:8px;">
+                        <button class="btn-sm" style="background:var(--success)" onclick="window.open('${f.url}')">ទាញយក</button>
+                        <button class="btn-sm" style="background:#444" onclick="deleteFile('${f.real_name}')">លុប</button>
+                    </div>
+                </div>`).join('');
+        }
     }
 
     async function deleteFile(n) { if(confirm("លុបហ្វាយនេះ?")) { await fetch('/api/delete/'+n, {method:'DELETE'}); loadFiles(); } }
 
-    initLicense();
-    loadFiles();
+    window.onload = checkLicense;
 </script>
 </body>
 </html>
