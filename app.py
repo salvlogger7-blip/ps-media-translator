@@ -221,10 +221,13 @@ def delete_file(filename):
         return jsonify({"status":"ok"})
     return jsonify({"status":"error"}), 404
 
+import threading
+def run_telegram():
+    import telegram_bot_daemon
+    telegram_bot_daemon.run_daemon()
+
+threading.Thread(target=run_telegram, daemon=True).start()
+
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 5000))
     app.run(host='0.0.0.0', port=port, debug=False)
-    import threading
-def run_telegram():
-    import telegram_bot_daemon
-threading.Thread(target=run_telegram, daemon=True).start()
